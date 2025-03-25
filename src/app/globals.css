@@ -10,6 +10,7 @@
   --accent: #60A5FA;
   --background: #F8FAFC;
   --text: #1E293B;
+  --foreground: #000000;
 }
 
 @layer base {
@@ -172,7 +173,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
-    --foreground: #ededed;
+    --foreground: #000000;
   }
 }
 
