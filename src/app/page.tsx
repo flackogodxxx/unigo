@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   FaCar,
@@ -14,7 +14,9 @@ import {
   FaRoute,
   FaUniversity,
   FaMapPin,
-  FaArrowRight
+  FaArrowRight,
+  FaUserCircle,
+  FaTachometerAlt
 } from 'react-icons/fa';
 import { HiCurrencyDollar } from 'react-icons/hi';
 
@@ -23,6 +25,9 @@ export default function Home() {
   const router = useRouter();
   const [fromLocation, setFromLocation] = useState('');
   const [toLocation, setToLocation] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userName, setUserName] = useState('');
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -34,6 +39,23 @@ export default function Home() {
     }
   };
 
+  // Verificar se o usuário já está logado
+  useEffect(() => {
+    const token = localStorage.getItem('userToken');
+    const name = localStorage.getItem('userName');
+
+    if (token) {
+      setIsLoggedIn(true);
+      setUserName(name || 'Usuário');
+      // Redirecionamos automaticamente após breve visualização da página inicial
+      const redirectTimer = setTimeout(() => {
+        router.push('/dashboard');
+      }, 1500);
+
+      return () => clearTimeout(redirectTimer);
+    }
+  }, [router]);
+
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
     visible: {
@@ -42,10 +64,49 @@ export default function Home() {
     }
   };
 
+  const handleDashboardClick = () => {
+    router.push('/dashboard');
+  };
+
   return (
     <main className="min-h-screen" ref={containerRef}>
+      {/* Barra superior para usuários logados */}
+      {isLoggedIn && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="fixed top-0 left-0 right-0 bg-white z-50 shadow-md py-2 px-4"
+        >
+          <div className="container mx-auto flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-900 to-blue-700 flex items-center justify-center text-white">
+                <FaCar className="text-sm" />
+              </div>
+              <span className="font-medium text-slate-800 hidden sm:inline">UniGo</span>
+            </div>
+
+            <motion.button
+              onClick={handleDashboardClick}
+              className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-full text-blue-900 text-sm transition-colors"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+            >
+              <FaTachometerAlt className="text-xs" />
+              <span className="font-medium">Acessar Dashboard</span>
+            </motion.button>
+
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-slate-600 hidden sm:inline">Olá, {userName}</span>
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <FaUserCircle className="text-blue-900" />
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* Hero Section with Map Background */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16 px-4">
+      <section className={`relative min-h-screen flex items-center justify-center overflow-hidden ${isLoggedIn ? 'pt-20' : 'pt-16'} px-4`}>
         <motion.div
           className="absolute inset-0 hero-pattern"
           initial={{ opacity: 0 }}
@@ -151,14 +212,25 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 1 }}
             >
-              <motion.button
-                className="btn-primary w-full sm:w-auto"
-                onClick={() => router.push('/register')}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Começar Agora
-              </motion.button>
+              {isLoggedIn ? (
+                <motion.button
+                  className="btn-primary w-full sm:w-auto"
+                  onClick={handleDashboardClick}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Acessar Dashboard
+                </motion.button>
+              ) : (
+                <motion.button
+                  className="btn-primary w-full sm:w-auto"
+                  onClick={() => router.push('/register')}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Começar Agora
+                </motion.button>
+              )}
               <motion.button
                 className="btn-secondary w-full sm:w-auto"
                 onClick={() => document.getElementById('beneficios')?.scrollIntoView({ behavior: 'smooth' })}
@@ -304,7 +376,7 @@ export default function Home() {
                     </div>
                     <div className="flex-1">
                       <div className="text-sm text-slate-500">Origem</div>
-                      <div className="font-medium">Residencial Universitário</div>
+                      <div className="font-medium">Centro de Ourinhos</div>
                     </div>
                   </div>
 
@@ -318,7 +390,7 @@ export default function Home() {
                     </div>
                     <div className="flex-1">
                       <div className="text-sm text-slate-500">Destino</div>
-                      <div className="font-medium">Campus UniFio</div>
+                      <div className="font-medium">UniFio - Campus Principal</div>
                     </div>
                   </div>
                 </div>
@@ -334,7 +406,7 @@ export default function Home() {
                       <div className="w-12 h-12 rounded-full bg-slate-200 mr-3"></div>
                       <div className="flex-1">
                         <div className="font-medium">Motorista {item}</div>
-                        <div className="text-xs text-slate-500">Saída em 15 min • R$ 5,00</div>
+                        <div className="text-xs text-slate-500">Saída: 07:{15 + (item * 5)} • R$ {4 + item},00</div>
                       </div>
                       <FaArrowRight className="text-blue-900" />
                     </motion.div>
@@ -462,8 +534,8 @@ export default function Home() {
                       <div className="space-y-2">
                         {[1, 2].map((item) => (
                           <div key={item} className="bg-white p-2 rounded-md shadow-sm">
-                            <div className="text-xs font-medium">Campus UniFio → Centro</div>
-                            <div className="text-xs text-slate-500">Hoje, 17:30 • 3 vagas</div>
+                            <div className="text-xs font-medium">{item === 1 ? 'Centro → UniFio' : 'UniFio → Jardim Europa'}</div>
+                            <div className="text-xs text-slate-500">{item === 1 ? 'Hoje, 07:30' : 'Hoje, 17:30'} • {item === 1 ? 2 : 3} vagas</div>
                           </div>
                         ))}
                       </div>
@@ -472,7 +544,7 @@ export default function Home() {
                     <div className="bg-blue-50 rounded-lg p-3 mb-3">
                       <div className="text-sm font-medium mb-2">Carona Atual</div>
                       <div className="bg-white p-2 rounded-md shadow-sm">
-                        <div className="text-xs font-medium">Residencial → Campus</div>
+                        <div className="text-xs font-medium">Residencial → UniFio</div>
                         <div className="text-xs text-slate-500">Em andamento • Chegada em 5 min</div>
                         <div className="mt-2 h-1 bg-slate-200 rounded-full">
                           <div className="h-1 bg-blue-900 rounded-full w-3/4"></div>
@@ -542,22 +614,35 @@ export default function Home() {
             viewport={{ once: true }}
             className="flex flex-col sm:flex-row gap-4 justify-center"
           >
-            <motion.button
-              className="bg-white text-blue-900 px-6 py-3 rounded-lg font-semibold shadow-lg flex items-center justify-center gap-2"
-              onClick={() => router.push('/register')}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Criar Conta Agora
-            </motion.button>
-            <motion.button
-              className="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white/10 transition-all duration-300 flex items-center justify-center gap-2"
-              onClick={() => router.push('/login')}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Já tenho uma conta
-            </motion.button>
+            {isLoggedIn ? (
+              <motion.button
+                className="bg-white text-blue-900 px-6 py-3 rounded-lg font-semibold shadow-lg flex items-center justify-center gap-2"
+                onClick={handleDashboardClick}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Acessar Meu Dashboard
+              </motion.button>
+            ) : (
+              <>
+                <motion.button
+                  className="bg-white text-blue-900 px-6 py-3 rounded-lg font-semibold shadow-lg flex items-center justify-center gap-2"
+                  onClick={() => router.push('/register')}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Criar Conta Agora
+                </motion.button>
+                <motion.button
+                  className="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white/10 transition-all duration-300 flex items-center justify-center gap-2"
+                  onClick={() => router.push('/login')}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Já tenho uma conta
+                </motion.button>
+              </>
+            )}
           </motion.div>
         </div>
       </section>

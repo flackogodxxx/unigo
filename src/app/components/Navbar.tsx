@@ -1,148 +1,239 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
-import { FaCar, FaBars, FaTimes } from 'react-icons/fa';
-import { useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { usePathname } from 'next/navigation';
+import { motion } from 'framer-motion';
+import {
+  FaUser,
+  FaBars,
+  FaTimes,
+  FaBell,
+  FaAngleDown,
+  FaSignOutAlt,
+  FaCog,
+  FaHistory
+} from 'react-icons/fa';
+import userService, { UserData } from '../services/userService';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const router = useRouter();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [userData, setUserData] = useState<UserData | null>(null);
   const pathname = usePathname();
 
-  const menuItems = [
-    { label: 'Início', path: '/' },
-    { label: 'Benefícios', path: '/#beneficios' },
-    { label: 'Como Funciona', path: '/#como-funciona' },
-    { label: 'Entrar', path: '/login' },
-    { label: 'Cadastrar', path: '/register', highlight: true }
-  ];
+  useEffect(() => {
+    const loadUserData = async () => {
+      const data = await userService.getUserData();
+      setUserData(data);
+    };
 
-  const handleNavigation = (path: string) => {
-    setIsMenuOpen(false);
-    if (path.includes('#')) {
-      if (pathname === '/') {
-        const sectionId = path.split('#')[1];
-        document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
-      } else {
-        router.push(path);
-      }
-    } else {
-      router.push(path);
-    }
+    loadUserData();
+
+    // Adicionar listener para atualizações
+    const handleUserUpdate = (newData: UserData) => {
+      setUserData(newData);
+    };
+
+    userService.addListener(handleUserUpdate);
+
+    return () => {
+      userService.removeListener(handleUserUpdate);
+    };
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('userToken');
+    localStorage.removeItem('userName');
+    localStorage.removeItem('userImage');
+    window.location.href = '/login';
   };
 
-  return (
-    <motion.nav
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      className="fixed top-0 left-0 right-0 z-50 glass-effect"
-    >
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <motion.button
-            onClick={() => handleNavigation('/')}
-            className="flex items-center space-x-2"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-900 to-blue-700 rounded-lg flex items-center justify-center">
-              <FaCar className="text-white text-lg" />
-            </div>
-            <span className="text-xl font-bold gradient-text">UniGo</span>
-          </motion.button>
+  const menuItems = [
+    { href: '/dashboard', label: 'Dashboard' },
+    { href: '/passenger-dashboard', label: 'Buscar Carona' },
+    { href: '/driver-dashboard', label: 'Oferecer Carona' }
+  ];
 
-          {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-6">
+  return (
+    <nav className="fixed top-0 left-0 right-0 bg-white shadow-md z-40">
+      <div className="container mx-auto px-4">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <Link href="/" className="flex items-center">
+            <span className="text-xl font-bold text-blue-600">UniGo</span>
+          </Link>
+
+          {/* Menu Desktop */}
+          <div className="hidden md:flex items-center space-x-8">
             {menuItems.map((item) => (
-              <motion.button
-                key={item.path}
-                onClick={() => handleNavigation(item.path)}
-                className={`relative px-4 py-2 rounded-lg transition-all ${
-                  item.highlight
-                    ? 'btn-primary text-sm'
-                    : `nav-link ${pathname === item.path ? 'text-blue-900' : 'text-slate-600'}`
-                }`}
-                whileHover={item.highlight ? { scale: 1.05 } : { y: -2 }}
-                whileTap={{ scale: 0.95 }}
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`text-sm font-medium ${pathname === item.href
+                    ? 'text-blue-600'
+                    : 'text-slate-600 hover:text-blue-600'
+                  } transition-colors`}
               >
-                {!item.highlight && pathname === item.path && (
-                  <motion.div
-                    className="absolute inset-0 bg-blue-50 rounded-lg -z-10"
-                    layoutId="navbar-active"
-                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                  />
-                )}
                 {item.label}
-              </motion.button>
+              </Link>
             ))}
           </div>
 
-          {/* Mobile Menu Button */}
-          <motion.button
-            className="md:hidden w-10 h-10 flex items-center justify-center rounded-lg bg-slate-100 text-slate-600"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-          >
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={isMenuOpen ? 'close' : 'menu'}
-                initial={{ rotate: -90, opacity: 0 }}
-                animate={{ rotate: 0, opacity: 1 }}
-                exit={{ rotate: 90, opacity: 0 }}
-                transition={{ duration: 0.2 }}
+          {/* Perfil e Notificações */}
+          <div className="hidden md:flex items-center space-x-4">
+            <button className="w-8 h-8 flex items-center justify-center text-slate-600 hover:bg-slate-100 rounded-full transition-colors relative">
+              <FaBell />
+              <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+            </button>
+
+            <div className="relative">
+              <button
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="flex items-center space-x-3 hover:bg-slate-50 rounded-full pl-2 pr-3 py-1 transition-colors"
               >
-                {isMenuOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
-              </motion.div>
-            </AnimatePresence>
-          </motion.button>
+                <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-200">
+                  {userData?.image ? (
+                    <Image
+                      src={userData.image}
+                      alt={userData.name}
+                      width={32}
+                      height={32}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <FaUser className="w-full h-full p-1.5 text-slate-400" />
+                  )}
+                </div>
+                <span className="text-sm font-medium text-slate-700">{userData?.name}</span>
+                <FaAngleDown className={`text-slate-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isDropdownOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden"
+                >
+                  <Link
+                    href="/profile"
+                    className="flex items-center gap-3 px-4 py-3 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+                  >
+                    <FaUser className="text-slate-400" />
+                    <span>Meu Perfil</span>
+                  </Link>
+                  <Link
+                    href="/ride-history"
+                    className="flex items-center gap-3 px-4 py-3 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+                  >
+                    <FaHistory className="text-slate-400" />
+                    <span>Histórico</span>
+                  </Link>
+                  <Link
+                    href="/settings"
+                    className="flex items-center gap-3 px-4 py-3 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+                  >
+                    <FaCog className="text-slate-400" />
+                    <span>Configurações</span>
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    <FaSignOutAlt className="text-red-500" />
+                    <span>Sair</span>
+                  </button>
+                </motion.div>
+              )}
+            </div>
+          </div>
+
+          {/* Menu Mobile */}
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="md:hidden w-10 h-10 flex items-center justify-center text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+          >
+            {isMenuOpen ? <FaTimes /> : <FaBars />}
+          </button>
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="md:hidden bg-white border-t border-slate-100"
-          >
-            <motion.div
-              className="container mx-auto px-4 py-4 space-y-2"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.1 }}
-            >
-              {menuItems.map((item, index) => (
-                <motion.button
-                  key={item.path}
-                  onClick={() => handleNavigation(item.path)}
-                  className={`block w-full text-left rounded-lg transition-all ${
-                    item.highlight
-                      ? 'btn-primary text-center my-4'
-                      : `p-3 ${
-                          pathname === item.path
-                            ? 'bg-blue-50 text-blue-900'
-                            : 'text-slate-600 hover:bg-slate-50'
-                        }`
-                  }`}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  whileHover={item.highlight ? { scale: 1.02 } : { x: 8 }}
-                  whileTap={{ scale: 0.98 }}
+      {/* Menu Mobile Expandido */}
+      {isMenuOpen && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className="md:hidden border-t border-slate-200"
+        >
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-xl mb-4">
+              <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-200">
+                {userData?.image ? (
+                  <Image
+                    src={userData.image}
+                    alt={userData.name}
+                    width={40}
+                    height={40}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <FaUser className="w-full h-full p-2 text-slate-400" />
+                )}
+              </div>
+              <div>
+                <div className="font-medium text-slate-900">{userData?.name}</div>
+                <div className="text-sm text-slate-500">{userData?.email}</div>
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              {menuItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`block px-4 py-3 rounded-lg text-sm font-medium ${pathname === item.href
+                      ? 'bg-blue-50 text-blue-600'
+                      : 'text-slate-600 hover:bg-slate-50'
+                    } transition-colors`}
+                  onClick={() => setIsMenuOpen(false)}
                 >
                   {item.label}
-                </motion.button>
+                </Link>
               ))}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.nav>
+              <Link
+                href="/profile"
+                className="block px-4 py-3 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Meu Perfil
+              </Link>
+              <Link
+                href="/ride-history"
+                className="block px-4 py-3 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Histórico
+              </Link>
+              <Link
+                href="/settings"
+                className="block px-4 py-3 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Configurações
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="w-full px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors text-left"
+              >
+                Sair
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </nav>
   );
 }
