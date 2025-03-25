@@ -25,32 +25,41 @@ export default function BottomNavigation({ activeTab }: BottomNavigationProps) {
             path: '/dashboard',
             label: 'Início',
             icon: FaCompass,
-            gradient: 'from-blue-600 to-blue-800'
+            activeTextColor: 'text-blue-600',
+            activeBgColor: 'bg-blue-100',
+            activeTextColorDark: 'text-blue-700'
         },
         {
             path: '/passenger-dashboard',
             label: 'Buscar',
             icon: FaSearch,
-            gradient: 'from-green-600 to-green-800',
-            oldStyle: true
+            activeTextColor: 'text-green-600',
+            activeBgColor: 'bg-green-100',
+            activeTextColorDark: 'text-green-700'
         },
         {
             path: '/driver-dashboard',
             label: 'Oferecer',
             icon: FaCar,
-            gradient: 'from-indigo-600 to-indigo-800'
+            activeTextColor: 'text-indigo-600',
+            activeBgColor: 'bg-indigo-100',
+            activeTextColorDark: 'text-indigo-700'
         },
         {
             path: '/ride-history',
             label: 'Histórico',
             icon: FaHistory,
-            gradient: 'from-amber-600 to-amber-800'
+            activeTextColor: 'text-amber-600',
+            activeBgColor: 'bg-amber-100',
+            activeTextColorDark: 'text-amber-700'
         },
         {
             path: '/profile',
             label: 'Perfil',
             icon: FaUser,
-            gradient: 'from-purple-600 to-purple-800'
+            activeTextColor: 'text-purple-600',
+            activeBgColor: 'bg-purple-100',
+            activeTextColorDark: 'text-purple-700'
         }
     ];
 
@@ -78,54 +87,35 @@ export default function BottomNavigation({ activeTab }: BottomNavigationProps) {
             transition={{ delay: 0.2, type: 'spring', stiffness: 260, damping: 20 }}
         >
             <div className="flex justify-around py-1 px-1">
-                {navItems.map((item, index) => (
-                    <motion.button
-                        key={item.path}
-                        className={`flex flex-col items-center justify-center p-2 rounded-lg relative ${isActive(item.path)
-                            ? item.oldStyle
-                                ? 'text-green-600'
-                                : 'text-blue-600'
-                            : 'text-slate-500'
-                            }`}
-                        whileHover={{ y: -2 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => navigateTo(item.path)}
-                    >
-                        {isActive(item.path) && !item.oldStyle && (
-                            <motion.div
-                                className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-10 rounded-lg`}
-                                layoutId="bottomNavActive"
-                                transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
-                            />
-                        )}
+                {navItems.map((item) => {
+                    const active = isActive(item.path);
 
-                        <div className={`p-1 rounded-full ${isActive(item.path)
-                            ? item.oldStyle
-                                ? 'bg-green-50'
-                                : 'bg-blue-50'
-                            : ''
-                            }`}>
-                            <item.icon
-                                size={20}
-                                className={
-                                    isActive(item.path) && !item.oldStyle
-                                        ? `text-${item.gradient.split('-')[1]}-600`
-                                        : isActive(item.path) && item.oldStyle
-                                            ? 'text-green-600'
-                                            : ''
-                                }
-                            />
-                        </div>
-                        <span className={`text-xs mt-1 font-medium ${isActive(item.path)
-                            ? item.oldStyle
-                                ? 'text-green-800'
-                                : 'text-slate-800'
-                            : 'text-slate-500'
-                            }`}>
-                            {item.label}
-                        </span>
-                    </motion.button>
-                ))}
+                    return (
+                        <motion.button
+                            key={item.path}
+                            className="flex flex-col items-center justify-center p-2 rounded-lg relative"
+                            whileHover={{ y: -2 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => navigateTo(item.path)}
+                        >
+                            {active && (
+                                <motion.div
+                                    className={`absolute inset-0 ${item.activeBgColor} opacity-80 rounded-lg`}
+                                    layoutId="bottomNavActive"
+                                    transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                                />
+                            )}
+
+                            <div className={`p-1 rounded-full ${active ? item.activeTextColor : 'text-slate-500'}`}>
+                                <item.icon size={20} />
+                            </div>
+
+                            <span className={`text-xs mt-1 font-medium ${active ? item.activeTextColorDark : 'text-slate-500'}`}>
+                                {item.label}
+                            </span>
+                        </motion.button>
+                    );
+                })}
             </div>
 
             {/* Indicador de página atual - linha superior animada */}
