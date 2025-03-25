@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { motion } from 'framer-motion';
@@ -68,7 +69,7 @@ export default function Register() {
         transition={{ duration: 1 }}
       />
       <div className="absolute inset-0 wave-pattern opacity-10" />
-      
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

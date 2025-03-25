@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { motion } from 'framer-motion';
@@ -20,7 +21,7 @@ export default function Login() {
     try {
       // Simulando uma chamada de API
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       if (!email.endsWith('@unifio.edu.br')) {
         throw new Error('Por favor, use seu email universitário @unifio.edu.br');
       }
@@ -44,7 +45,7 @@ export default function Login() {
         transition={{ duration: 1 }}
       />
       <div className="absolute inset-0 wave-pattern opacity-10" />
-      
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
