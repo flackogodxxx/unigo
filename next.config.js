@@ -11,8 +11,7 @@ const nextConfig = {
     // Otimizações para produção
     compress: true,
     poweredByHeader: false,
-    reactStrictMode: true,
-    swcMinify: true,
+    reactStrictMode: true
 }
 
 module.exports = nextConfig

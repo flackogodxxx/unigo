@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState, Suspense } from 'react';
+import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Navbar from '../components/Navbar';
 import Image from 'next/image';
@@ -23,12 +24,23 @@ import dynamic from 'next/dynamic';
 
 const BottomNavigation = dynamic(() => import('../components/BottomNavigation'), { ssr: false });
 
+// Componente para buscar parâmetros com Suspense
+function SearchParamHandler({ onParamFound }: { onParamFound: (destination: string | null) => void }) {
+    const searchParams = useSearchParams();
+
+    useEffect(() => {
+        const destinationParam = searchParams?.get('destination');
+        onParamFound(destinationParam);
+    }, [searchParams, onParamFound]);
+
+    return null;
+}
+
 export default function PassengerDashboard() {
     const [isLoading, setIsLoading] = useState(true);
     const [userName, setUserName] = useState('');
     const [userImage, setUserImage] = useState('');
     const router = useRouter();
-    const searchParams = useSearchParams();
 
     // Estado para busca de carona
     const [searchRide, setSearchRide] = useState({
@@ -149,12 +161,6 @@ export default function PassengerDashboard() {
             setUserName(name || 'Usuário');
             setUserImage(image || '');
 
-            // Verificar se há um destino predefinido nos parâmetros de busca
-            const destinationParam = searchParams?.get('destination');
-            if (destinationParam) {
-                setSearchRide(prev => ({ ...prev, destination: destinationParam }));
-            }
-
             // Definir data padrão como hoje
             const today = new Date();
             const formattedDate = today.toISOString().split('T')[0];
@@ -164,7 +170,13 @@ export default function PassengerDashboard() {
         };
 
         checkAuth();
-    }, [searchParams]);
+    }, []);
+
+    const handleDestinationParamFound = (destination: string | null) => {
+        if (destination) {
+            setSearchRide(prev => ({ ...prev, destination }));
+        }
+    };
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -193,6 +205,9 @@ export default function PassengerDashboard() {
     return (
         <div className="min-h-screen bg-slate-50 pb-16">
             <Navbar />
+            <Suspense fallback={null}>
+                <SearchParamHandler onParamFound={handleDestinationParamFound} />
+            </Suspense>
 
             <main className="pt-20 pb-12 px-3 sm:px-4">
                 <div className="container mx-auto max-w-6xl">
@@ -475,7 +490,7 @@ export default function PassengerDashboard() {
             </main>
 
             {/* Barra de navegação inferior */}
-            <BottomNavigation />
+            <BottomNavigation activeTab="passenger" />
         </div>
     );
 }
