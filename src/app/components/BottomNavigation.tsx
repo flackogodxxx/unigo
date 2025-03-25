@@ -11,7 +11,11 @@ import {
     FaSearch
 } from 'react-icons/fa';
 
-export default function BottomNavigation() {
+interface BottomNavigationProps {
+    activeTab?: string;
+}
+
+export default function BottomNavigation({ activeTab }: BottomNavigationProps) {
     const router = useRouter();
     const pathname = usePathname();
 
@@ -57,6 +61,12 @@ export default function BottomNavigation() {
 
     // Verificar se o caminho atual corresponde ao item de navegação
     const isActive = (path: string) => {
+        if (activeTab) {
+            // Se activeTab foi fornecido, compare com a parte do caminho após a última '/'
+            const tabName = path.split('/').pop() || '';
+            return tabName === activeTab || (activeTab === 'passenger' && tabName === 'passenger-dashboard') ||
+                (activeTab === 'driver' && tabName === 'driver-dashboard');
+        }
         return pathname === path;
     };
 
@@ -72,10 +82,10 @@ export default function BottomNavigation() {
                     <motion.button
                         key={item.path}
                         className={`flex flex-col items-center justify-center p-2 rounded-lg relative ${isActive(item.path)
-                                ? item.oldStyle
-                                    ? 'text-green-600'
-                                    : 'text-blue-600'
-                                : 'text-slate-500'
+                            ? item.oldStyle
+                                ? 'text-green-600'
+                                : 'text-blue-600'
+                            : 'text-slate-500'
                             }`}
                         whileHover={{ y: -2 }}
                         whileTap={{ scale: 0.9 }}
@@ -90,10 +100,10 @@ export default function BottomNavigation() {
                         )}
 
                         <div className={`p-1 rounded-full ${isActive(item.path)
-                                ? item.oldStyle
-                                    ? 'bg-green-50'
-                                    : 'bg-blue-50'
-                                : ''
+                            ? item.oldStyle
+                                ? 'bg-green-50'
+                                : 'bg-blue-50'
+                            : ''
                             }`}>
                             <item.icon
                                 size={20}
@@ -107,10 +117,10 @@ export default function BottomNavigation() {
                             />
                         </div>
                         <span className={`text-xs mt-1 font-medium ${isActive(item.path)
-                                ? item.oldStyle
-                                    ? 'text-green-800'
-                                    : 'text-slate-800'
-                                : 'text-slate-500'
+                            ? item.oldStyle
+                                ? 'text-green-800'
+                                : 'text-slate-800'
+                            : 'text-slate-500'
                             }`}>
                             {item.label}
                         </span>
