@@ -18,32 +18,32 @@ export default function BottomNavigation({ activeTab }: BottomNavigationProps) {
     const router = useRouter();
     const pathname = usePathname();
 
-    // Definir itens de navegação
+    // Definir itens de navegação com componentes de ícones diretamente
     const navItems = [
         {
             path: '/dashboard',
             label: 'Início',
-            icon: FaHome
+            icon: () => <FaHome size={22} />
         },
         {
             path: '/passenger-dashboard',
             label: 'Buscar',
-            icon: FaSearch
+            icon: () => <FaSearch size={22} />
         },
         {
             path: '/driver-dashboard',
             label: 'Oferecer',
-            icon: FaCar
+            icon: () => <FaCar size={22} />
         },
         {
             path: '/ride-history',
             label: 'Histórico',
-            icon: FaHistory
+            icon: () => <FaHistory size={22} />
         },
         {
             path: '/profile',
             label: 'Perfil',
-            icon: FaUser
+            icon: () => <FaUser size={22} />
         }
     ];
 
@@ -75,8 +75,8 @@ export default function BottomNavigation({ activeTab }: BottomNavigationProps) {
                             className="flex flex-col items-center justify-center w-1/5"
                             onClick={() => navigateTo(item.path)}
                         >
-                            <div className={`rounded-full ${active ? 'text-blue-600' : 'text-slate-500'}`}>
-                                <item.icon size={22} />
+                            <div className={active ? 'text-blue-600' : 'text-slate-500'}>
+                                {item.icon()}
                             </div>
 
                             <span className={`text-xs mt-1 ${active ? 'text-blue-600 font-medium' : 'text-slate-500'}`}>
